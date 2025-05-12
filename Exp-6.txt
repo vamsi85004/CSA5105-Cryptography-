@@ -1,0 +1,25 @@
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+int gcd(int a, int b) {
+    if (b == 0) return a;
+    return gcd(b, a % b);
+}
+int mod_inverse(int a, int m) {
+    for (int i = 1; i < m; i++) {
+        if ((a * i) % m == 1) return i;
+    }
+    return -1;
+}
+int main() {
+    for (int a = 1; a < 26; a++) {
+        if (gcd(a, 26) == 1) {
+            for (int b = 0; b < 26; b++) {
+                if (((a * 4 + b) % 26 == 1) && ((a * 19 + b) % 26 == 20)) {
+                    printf("Possible values of a and b: a = %d, b = %d\n", a, b);
+                }
+            }
+        }
+    }
+    return 0;
+}

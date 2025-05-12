@@ -1,0 +1,86 @@
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+#define SIZE 5
+void generateMatrix(char *keyword, char matrix[SIZE][SIZE]) {
+    int used[26] = {0};
+    int row = 0, col = 0;
+
+    for (int i = 0; keyword[i]; i++) {
+        char c = toupper(keyword[i]);
+        if (c == 'J') c = 'I';
+        if (!used[c - 'A']) {
+            matrix[row][col++] = c;
+            used[c - 'A'] = 1;
+            if (col == SIZE) {
+                col = 0;
+                row++;
+            }
+        }
+    }
+    for (char c = 'A'; c <= 'Z'; c++) {
+        if (c == 'J') continue;
+        if (!used[c - 'A']) {
+            matrix[row][col++] = c;
+            used[c - 'A'] = 1;
+            if (col == SIZE) {
+                col = 0;
+                row++;
+            }
+        }
+    }
+}
+void findPosition(char matrix[SIZE][SIZE], char c, int *row, int *col) {
+    for (int i = 0; i < SIZE; i++) {
+        for (int j = 0; j < SIZE; j++) {
+            if (matrix[i][j] == c) {
+                *row = i;
+                *col = j;
+                return;
+            }
+        }
+    }
+}
+void decryptPair(char matrix[SIZE][SIZE], char a, char b, char *decrypted) {
+    int row1, col1, row2, col2;
+    findPosition(matrix, a, &row1, &col1);
+    findPosition(matrix, b, &row2, &col2);
+    if (row1 == row2) {
+        decrypted[0] = matrix[row1][(col1 + SIZE - 1) % SIZE];
+        decrypted[1] = matrix[row2][(col2 + SIZE - 1) % SIZE];
+    } else if (col1 == col2) {
+        decrypted[0] = matrix[(row1 + SIZE - 1) % SIZE][col1];
+        decrypted[1] = matrix[(row2 + SIZE - 1) % SIZE][col2];
+    } else {
+        decrypted[0] = matrix[row1][col2];
+        decrypted[1] = matrix[row2][col1];
+    }
+}
+int main() {
+    char keyword[] = "KEDYWORKS"; // or "KEYWORD"
+    char matrix[SIZE][SIZE];
+    generateMatrix(keyword, matrix);
+    char ciphertext[] = "KXJEY UREBE ZWEHE WRYTU HEYFS KREHE GOYFI WTTTU OLKSY CAJPO BOTEI ZONTX BYBNT GONEY CUZWR GDSON SXBOU YWRHE BAAHY USEDQ";
+    char *ptr = ciphertext;
+    char clean_ciphertext[100];
+    int index = 0;
+    while (*ptr) {
+        if (*ptr != ' ') {
+            clean_ciphertext[index++] = *ptr;
+        }
+        ptr++;
+    }
+    clean_ciphertext[index] = '\0';
+    char decrypted_text[100];
+    index = 0;
+    for (int i = 0; i < strlen(clean_ciphertext); i += 2) {
+        char pair[2] = {clean_ciphertext[i], clean_ciphertext[i + 1]};
+        char decrypted_pair[2];
+        decryptPair(matrix, pair[0], pair[1], decrypted_pair);
+        decrypted_text[index++] = decrypted_pair[0];
+        decrypted_text[index++] = decrypted_pair[1];
+    }
+    decrypted_text[index] = '\0';
+    printf("Decrypted text: %s\n", decrypted_text);
+    return 0;
+}

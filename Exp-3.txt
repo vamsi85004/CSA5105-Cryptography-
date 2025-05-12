@@ -1,0 +1,94 @@
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+#define SIZE 5
+void generateMatrix(char *keyword, char matrix[SIZE][SIZE]) {
+    int used[26] = {0};
+    int row = 0, col = 0;
+
+    for (int i = 0; keyword[i]; i++) {
+        char c = toupper(keyword[i]);
+        if (c == 'J') c = 'I';
+        if (!used[c - 'A']) {
+            matrix[row][col++] = c;
+            used[c - 'A'] = 1;
+            if (col == SIZE) {
+                col = 0;
+                row++;
+            }
+        }
+    }
+
+    for (char c = 'A'; c <= 'Z'; c++) {
+        if (c == 'J') continue;
+        if (!used[c - 'A']) {
+            matrix[row][col++] = c;
+            used[c - 'A'] = 1;
+            if (col == SIZE) {
+                col = 0;
+                row++;
+            }
+        }
+    }
+}
+void findPosition(char matrix[SIZE][SIZE], char c, int *row, int *col) {
+    for (int i = 0; i < SIZE; i++) {
+        for (int j = 0; j < SIZE; j++) {
+            if (matrix[i][j] == c) {
+                *row = i;
+                *col = j;
+                return;
+            }
+        }
+    }
+}
+void encryptPair(char matrix[SIZE][SIZE], char a, char b, char *encrypted) {
+    int row1, col1, row2, col2;
+    findPosition(matrix, a, &row1, &col1);
+    findPosition(matrix, b, &row2, &col2);
+
+    if (row1 == row2) {
+        encrypted[0] = matrix[row1][(col1 + 1) % SIZE];
+        encrypted[1] = matrix[row2][(col2 + 1) % SIZE];
+    } else if (col1 == col2) {
+        encrypted[0] = matrix[(row1 + 1) % SIZE][col1];
+        encrypted[1] = matrix[(row2 + 1) % SIZE][col2];
+    } else {
+        encrypted[0] = matrix[row1][col2];
+        encrypted[1] = matrix[row2][col1];
+    }
+}
+void printMatrix(char matrix[SIZE][SIZE]) {
+    for (int i = 0; i < SIZE; i++) {
+        for (int j = 0; j < SIZE; j++) {
+            printf("%c ", matrix[i][j]);
+        }
+        printf("\n");
+    }
+}
+int main() {
+    char keyword[100];
+    printf("Enter keyword: ");
+    scanf("%s", keyword);
+    char matrix[SIZE][SIZE];
+    generateMatrix(keyword, matrix);
+    printf("Playfair Matrix:\n");
+    printMatrix(matrix);
+    char plaintext[100];
+    printf("Enter plaintext: ");
+    scanf("%s", plaintext);
+    for (int i = 0; plaintext[i]; i++) {
+        plaintext[i] = toupper(plaintext[i]);
+        if (plaintext[i] == 'J') plaintext[i] = 'I';
+    }
+    char encrypted[100] = "";
+    for (int i = 0; plaintext[i]; i += 2) {
+        char pair[2] = {plaintext[i], plaintext[i + 1]};
+        if (!pair[1]) pair[1] = 'X'; // Pad with X if necessary
+        char encryptedPair[2];
+        encryptPair(matrix, pair[0], pair[1], encryptedPair);
+        strcat(encrypted, encryptedPair);
+    }
+    printf("Encrypted text: %s\n", encrypted);
+    return 0;
+}

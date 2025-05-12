@@ -1,0 +1,61 @@
+#include <stdio.h>
+#define SIZE 2
+void modInverse(int a, int m, int *x) {
+    int i;
+    for (i = 1; i < m; i++) {
+        if ((a * i) % m == 1) {
+            *x = i;
+            return;
+        }
+    }
+}
+void matrixMultiply(int a[SIZE][SIZE], int b[SIZE][SIZE], int result[SIZE][SIZE]) {
+    int i, j, k;
+    for (i = 0; i < SIZE; i++) {
+        for (j = 0; j < SIZE; j++) {
+            result[i][j] = 0;
+            for (k = 0; k < SIZE; k++) {
+                result[i][j] += a[i][k] * b[k][j];
+            }
+            result[i][j] %= 26;
+            if (result[i][j] < 0) result[i][j] += 26;
+        }
+    }
+}
+void matrixInverse(int matrix[SIZE][SIZE], int inverse[SIZE][SIZE]) {
+    int det = (matrix[0][0] * matrix[1][1] - matrix[0][1] * matrix[1][0]) % 26;
+    if (det < 0) det += 26;
+    int det_inv;
+    modInverse(det, 26, &det_inv);
+
+    inverse[0][0] = (matrix[1][1] * det_inv) % 26;
+    inverse[0][1] = (-matrix[0][1] * det_inv) % 26;
+    inverse[1][0] = (-matrix[1][0] * det_inv) % 26;
+    inverse[1][1] = (matrix[0][0] * det_inv) % 26;
+    for (int i = 0; i < SIZE; i++) {
+        for (int j = 0; j < SIZE; j++) {
+            if (inverse[i][j] < 0) inverse[i][j] += 26;
+        }
+    }
+}
+void knownPlaintextAttack(int plaintext[SIZE][SIZE], int ciphertext[SIZE][SIZE], int key[SIZE][SIZE]) {
+    int plaintext_inv[SIZE][SIZE];
+    matrixInverse(plaintext, plaintext_inv);
+
+    matrixMultiply(ciphertext, plaintext_inv, key);
+}
+int main() {
+    int plaintext[SIZE][SIZE] = {{12, 4}, {19, 7}}; 
+    int ciphertext[SIZE][SIZE] = {{6, 10}, {16, 17}}; 
+    int key[SIZE][SIZE];
+    knownPlaintextAttack(plaintext, ciphertext, key);
+    printf("Key matrix:\n");
+    for (int i = 0; i < SIZE; i++) {
+        for (int j = 0; j < SIZE; j++) {
+            printf("%d ", key[i][j]);
+        }
+        printf("\n");
+    }
+    return 0;
+}
+

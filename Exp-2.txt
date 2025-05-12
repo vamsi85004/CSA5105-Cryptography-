@@ -1,0 +1,46 @@
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+void monoalphabetic_encrypt(char *plaintext, char *key) {
+    char *ptr = plaintext;
+    while (*ptr) {
+        if (isalpha(*ptr)) {
+            char base = isupper(*ptr) ? 'A' : 'a';
+            *ptr = key[*ptr - base] + (isupper(*ptr) ? 'A' : 'a') - 'a';
+        }
+        ptr++;
+    }
+}
+void monoalphabetic_decrypt(char *ciphertext, char *key) {
+    char reverse_key[26];
+    for (int i = 0; i < 26; i++) {
+        reverse_key[key[i] - 'a'] = i + 'a';
+    }
+    char *ptr = ciphertext;
+    while (*ptr) {
+        if (isalpha(*ptr)) {
+            char base = isupper(*ptr) ? 'A' : 'a';
+            *ptr = reverse_key[*ptr - base] + (isupper(*ptr) ? 'A' : 'a') - 'a';
+        }
+        ptr++;
+    }
+}
+int main() {
+    char text[100];
+    char key[27];
+    printf("Enter the plaintext alphabet mapping (26 letters, a-z): ");
+    scanf("%s", key);
+    printf("Enter the text: ");
+    getchar();  // Consume newline left-over
+    fgets(text, sizeof(text), stdin);
+    text[strcspn(text, "\n")] = 0;  // Remove the newline character
+    char encrypted_text[100];
+    strcpy(encrypted_text, text);
+    monoalphabetic_encrypt(encrypted_text, key);
+    printf("Encrypted text: %s\n", encrypted_text);
+    char decrypted_text[100];
+    strcpy(decrypted_text, encrypted_text);
+    monoalphabetic_decrypt(decrypted_text, key);
+    printf("Decrypted text: %s\n", decrypted_text);
+    return 0;
+}

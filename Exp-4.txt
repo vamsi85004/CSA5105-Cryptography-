@@ -1,0 +1,46 @@
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+void polyalphabetic_encrypt(char *plaintext, char *key) {
+    int plaintext_len = strlen(plaintext);
+    int key_len = strlen(key);
+
+    for (int i = 0; i < plaintext_len; i++) {
+        char shift = toupper(key[i % key_len]) - 'A';
+        if (isalpha(plaintext[i])) {
+            char base = isupper(plaintext[i]) ? 'A' : 'a';
+            plaintext[i] = ((plaintext[i] - base + shift) % 26 + 26) % 26 + base;
+        }
+    }
+}
+void polyalphabetic_decrypt(char *ciphertext, char *key) {
+    int ciphertext_len = strlen(ciphertext);
+    int key_len = strlen(key);
+
+    for (int i = 0; i < ciphertext_len; i++) {
+        char shift = toupper(key[i % key_len]) - 'A';
+        if (isalpha(ciphertext[i])) {
+            char base = isupper(ciphertext[i]) ? 'A' : 'a';
+            ciphertext[i] = ((ciphertext[i] - base - shift) % 26 + 26) % 26 + base;
+        }
+    }
+}
+int main() {
+    char text[100];
+    char key[100];
+    printf("Enter the text: ");
+    fgets(text, sizeof(text), stdin);
+    text[strcspn(text, "\n")] = 0;  // Remove the newline character
+    printf("Enter the key: ");
+    fgets(key, sizeof(key), stdin);
+    key[strcspn(key, "\n")] = 0;  // Remove the newline character
+    char encrypted_text[100];
+    strcpy(encrypted_text, text);
+    polyalphabetic_encrypt(encrypted_text, key);
+    printf("Encrypted text: %s\n", encrypted_text);
+    char decrypted_text[100];
+    strcpy(decrypted_text, encrypted_text);
+    polyalphabetic_decrypt(decrypted_text, key);
+    printf("Decrypted text: %s\n", decrypted_text);
+    return 0;
+}

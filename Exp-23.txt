@@ -1,0 +1,59 @@
+#include <stdio.h>
+#include <stdint.h>
+uint8_t xor(uint8_t a, uint8_t b) {
+    return a ^ b;
+}
+uint8_t sdes_encrypt(uint8_t plaintext, uint16_t key) {
+    return plaintext; 
+}
+void ctr_encrypt(uint8_t *plaintext, uint8_t *ciphertext, uint16_t key, uint8_t *counter, int length) {
+    uint8_t keystream;
+    for (int i = 0; i < length; i++) {
+        keystream = sdes_encrypt(*counter, key);
+        ciphertext[i] = xor(plaintext[i], keystream);
+        // Increment the counter here
+        for (int j = 7; j >= 0; j--) {
+            if ((counter[j] & 1) == 0) {
+                counter[j]++;
+                break;
+            } else {
+                counter[j] = 0;
+            }
+        }
+    }
+}
+void ctr_decrypt(uint8_t *ciphertext, uint8_t *plaintext, uint16_t key, uint8_t *counter, int length) {
+    uint8_t keystream;
+    for (int i = 0; i < length; i++) {
+        keystream = sdes_encrypt(*counter, key);
+        plaintext[i] = xor(ciphertext[i], keystream);
+        for (int j = 7; j >= 0; j--) {
+            if ((counter[j] & 1) == 0) {
+                counter[j]++;
+                break;
+            } else {
+                counter[j] = 0;
+            }
+        }
+    }
+}
+int main() {
+    uint8_t plaintext[3] = {0x01, 0x02, 0x04};
+    uint8_t ciphertext[3];
+    uint8_t decrypted[3];
+    uint8_t counter[1] = {0x00};
+    uint16_t key = 0x1FD; 
+    ctr_encrypt(plaintext, ciphertext, key, counter, 3);
+    printf("Ciphertext: ");
+    for (int i = 0; i < 3; i++) {
+        printf("%02X ", ciphertext[i]);
+    }
+    printf("\n");
+    ctr_decrypt(ciphertext, decrypted, key, counter, 3);
+    printf("Decrypted Plaintext: ");
+    for (int i = 0; i < 3; i++) {
+        printf("%02X ", decrypted[i]);
+    }
+    printf("\n");
+    return 0;
+}

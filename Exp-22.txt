@@ -1,0 +1,47 @@
+#include <stdio.h>
+#include <stdint.h>
+uint8_t xor(uint8_t a, uint8_t b) {
+    return a ^ b;
+}
+uint8_t sdes_encrypt(uint8_t plaintext, uint16_t key) {
+    return plaintext;
+}
+uint8_t sdes_decrypt(uint8_t ciphertext, uint16_t key) {
+    return ciphertext;
+}
+void cbc_encrypt(uint8_t *plaintext, uint8_t *ciphertext, uint16_t key, uint8_t iv, int length) {
+    uint8_t prev_cipher = iv;
+    for (int i = 0; i < length; i++) {
+        uint8_t input = xor(plaintext[i], prev_cipher);
+        ciphertext[i] = sdes_encrypt(input, key);
+        prev_cipher = ciphertext[i];
+    }
+}
+void cbc_decrypt(uint8_t *ciphertext, uint8_t *plaintext, uint16_t key, uint8_t iv, int length) {
+    uint8_t prev_cipher = iv;
+    for (int i = 0; i < length; i++) {
+        uint8_t decrypted = sdes_decrypt(ciphertext[i], key);
+        plaintext[i] = xor(decrypted, prev_cipher);
+        prev_cipher = ciphertext[i];
+    }
+}
+int main() {
+    uint8_t plaintext[2] = {0x01, 0x23};
+    uint8_t ciphertext[2];
+    uint8_t decrypted[2];
+    uint8_t iv = 0xAA; 
+    uint16_t key = 0x1FD; 
+    cbc_encrypt(plaintext, ciphertext, key, iv, 2);
+    printf("Ciphertext: ");
+    for (int i = 0; i < 2; i++) {
+        printf("%02X ", ciphertext[i]);
+    }
+    printf("\n");
+    cbc_decrypt(ciphertext, decrypted, key, iv, 2);
+    printf("Decrypted Plaintext: ");
+    for (int i = 0; i < 2; i++) {
+        printf("%02X ", decrypted[i]);
+    }
+    printf("\n");
+    return 0;
+}

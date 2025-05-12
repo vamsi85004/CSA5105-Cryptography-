@@ -1,0 +1,50 @@
+#include <stdio.h>
+int gcd(int a, int b) {
+    if (b == 0)
+        return a;
+    return gcd(b, a % b);
+}
+int mod_inverse(int a, int m) {
+    int x, y;
+    int g = gcd(a, m);
+    if (g != 1)
+        return -1; 
+    else {
+        int x1 = 1, y1 = 0, x2 = 0, y2 = 1, b = m;
+        while (a > 0) {
+            int q = b / a;
+            int temp = b % a;
+            b = a;
+            a = temp;
+            temp = x2;
+            x2 = x1 - q * x2;
+            x1 = temp;
+            temp = y2;
+            y2 = y1 - q * y2;
+            y1 = temp;
+        }
+        x = x1;
+        y = y1;
+    }
+    if (x < 0)
+        x += m;
+    return x;
+}
+int main() {
+    int n = 3599;
+    int e = 31;
+    int p, q;
+    for (p = 2; p * p <= n; p++) {
+        if (n % p == 0) {
+            q = n / p;
+            break;
+        }
+    }
+    printf("p = %d, q = %d\n", p, q);
+    int fn = (p - 1) * (q - 1);
+    printf("f(n) = %d\n", fn);
+    int d = mod_inverse(e, fn);
+    printf("Private key d = %d\n", d);
+    return 0;
+}
+

@@ -1,0 +1,38 @@
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+void caesar_encrypt(char *plaintext, int shift) {
+    char *ptr = plaintext;
+    while (*ptr) {
+        if (isalpha(*ptr)) {
+            char base = isupper(*ptr) ? 'A' : 'a';
+            *ptr = (( *ptr - base + shift ) % 26 + 26) % 26 + base;
+        }
+        ptr++;
+    }
+}
+void caesar_decrypt(char *ciphertext, int shift) {
+    caesar_encrypt(ciphertext, 26 - shift);
+}
+int main() {
+    char text[100];
+    int shift;
+    printf("Enter the text: ");
+    fgets(text, sizeof(text), stdin);
+    text[strcspn(text, "\n")] = 0;  // Remove the newline character
+    printf("Enter the shift value (1-25): ");
+    scanf("%d", &shift);
+    if (shift < 1 || shift > 25) {
+        printf("Invalid shift value. Please enter a value between 1 and 25.\n");
+        return 1;
+    }
+    char encrypted_text[100];
+    strcpy(encrypted_text, text);
+    caesar_encrypt(encrypted_text, shift);
+    printf("Encrypted text: %s\n", encrypted_text);
+    char decrypted_text[100];
+    strcpy(decrypted_text, encrypted_text);
+    caesar_decrypt(decrypted_text, shift);
+    printf("Decrypted text: %s\n", decrypted_text);
+    return 0;
+}

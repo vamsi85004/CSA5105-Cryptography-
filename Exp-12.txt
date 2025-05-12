@@ -1,0 +1,84 @@
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+#define SIZE 2
+void encrypt(int key[SIZE][SIZE], char *plaintext, char *encrypted_text) {
+    int index = 0;
+    for (int i = 0; i < strlen(plaintext); i += SIZE) {
+        int pair[SIZE];
+        for (int j = 0; j < SIZE; j++) {
+            pair[j] = toupper(plaintext[i + j]) - 'A';
+        }
+
+        int encrypted_pair[SIZE];
+        for (int j = 0; j < SIZE; j++) {
+            encrypted_pair[j] = 0;
+            for (int k = 0; k < SIZE; k++) {
+                encrypted_pair[j] += key[j][k] * pair[k];
+            }
+            encrypted_pair[j] %= 26;
+        }
+
+        for (int j = 0; j < SIZE; j++) {
+            encrypted_text[index++] = encrypted_pair[j] + 'A';
+        }
+    }
+    encrypted_text[index] = '\0';
+}
+void decrypt(int key[SIZE][SIZE], char *encrypted_text, char *decrypted_text) {
+    // Calculate the inverse of the key matrix
+    int det = key[0][0] * key[1][1] - key[0][1] * key[1][0];
+    det = (det % 26 + 26) % 26;
+    int det_inv = 0;
+    for (int i = 1; i < 26; i++) {
+        if ((det * i) % 26 == 1) {
+            det_inv = i;
+            break;
+        }
+    }
+    int key_inv[SIZE][SIZE];
+    key_inv[0][0] = (key[1][1] * det_inv) % 26;
+    key_inv[0][1] = (-key[0][1] * det_inv) % 26;
+    key_inv[1][0] = (-key[1][0] * det_inv) % 26;
+    key_inv[1][1] = (key[0][0] * det_inv) % 26;
+
+    for (int i = 0; i < SIZE; i++) {
+        for (int j = 0; j < SIZE; j++) {
+            key_inv[i][j] = (key_inv[i][j] % 26 + 26) % 26;
+        }
+    }
+    int index = 0;
+    for (int i = 0; i < strlen(encrypted_text); i += SIZE) {
+        int pair[SIZE];
+        for (int j = 0; j < SIZE; j++) {
+            pair[j] = encrypted_text[i + j] - 'A';
+        }
+
+        int decrypted_pair[SIZE];
+        for (int j = 0; j < SIZE; j++) {
+            decrypted_pair[j] = 0;
+            for (int k = 0; k < SIZE; k++) {
+                decrypted_pair[j] += key_inv[j][k] * pair[k];
+            }
+            decrypted_pair[j] %= 26;
+            decrypted_pair[j] = (decrypted_pair[j] % 26 + 26) % 26;
+        }
+
+        for (int j = 0; j < SIZE; j++) {
+            decrypted_text[index++] = decrypted_pair[j] + 'A';
+        }
+    }
+    decrypted_text[index] = '\0';
+}
+int main() {
+    int key[SIZE][SIZE] = {{9, 4}, {5, 7}};
+
+    char plaintext[] = "MEETMEATTHEUSUALPLACEATTENRATHERTHANEIGHTOCLOCK";
+    char encrypted_text[100];
+    encrypt(key, plaintext, encrypted_text);
+    printf("Encrypted text: %s\n", encrypted_text);
+    char decrypted_text[100];
+    decrypt(key, encrypted_text, decrypted_text);
+    printf("Decrypted text: %s\n", decrypted_text);
+    return 0;
+}

@@ -1,0 +1,64 @@
+#include <stdio.h>
+#include <stdint.h>
+#include <string.h>
+#define BLOCK_SIZE 8
+void xor_blocks(uint8_t *block1, uint8_t *block2, uint8_t *result) {
+    for (int i = 0; i < BLOCK_SIZE; i++) {
+        result[i] = block1[i] ^ block2[i];
+    }
+}
+
+
+void des3_encrypt(uint8_t *block, uint8_t *key1, uint8_t *key2, uint8_t *key3, uint8_t *result) {
+    uint8_t temp[BLOCK_SIZE];
+
+
+    xor_blocks(block, key1, temp);
+    xor_blocks(temp, key2, result);
+    xor_blocks(result, key3, result);
+}
+
+
+void des3_decrypt(uint8_t *block, uint8_t *key1, uint8_t *key2, uint8_t *key3, uint8_t *result) {
+    uint8_t temp[BLOCK_SIZE];
+
+    
+    xor_blocks(temp, key2, result);
+    xor_blocks(result, key1, result);
+}
+
+
+void cbc_encrypt(uint8_t *message, int message_len, uint8_t *key1, uint8_t *key2, uint8_t *key3, uint8_t *iv, uint8_t *ciphertext) {
+    uint8_t block[BLOCK_SIZE];
+    uint8_t encrypted_block[BLOCK_SIZE];
+
+    memcpy(block, iv, BLOCK_SIZE);
+
+    for (int i = 0; i < message_len; i += BLOCK_SIZE) {
+        
+        xor_blocks(block, message + i, block);
+        des3_encrypt(block, key1, key2, key3, encrypted_block);
+        memcpy(ciphertext + i, encrypted_block, BLOCK_SIZE);
+        memcpy(block, encrypted_block, BLOCK_SIZE);
+    }
+}
+int main() {
+    uint8_t key1[BLOCK_SIZE] = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08};
+    uint8_t key2[BLOCK_SIZE] = {0x09, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16};
+    uint8_t key3[BLOCK_SIZE] = {0x17, 0x18, 0x19, 0x20, 0x21, 0x22, 0x23, 0x24};
+    uint8_t iv[BLOCK_SIZE] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07};
+    uint8_t message[] = "Hello, World!";
+    int message_len = strlen((char *)message);
+    if (message_len % BLOCK_SIZE != 0) {
+        message_len = (message_len / BLOCK_SIZE + 1) * BLOCK_SIZE;
+    }
+    uint8_t ciphertext[message_len];
+    cbc_encrypt(message, message_len, key1, key2, key3, iv, ciphertext);
+    printf("Ciphertext: ");
+    for (int i = 0; i < message_len; i++) {
+        printf("%02x", ciphertext[i]);
+    }
+    printf("\n");
+    return 0;
+}
+

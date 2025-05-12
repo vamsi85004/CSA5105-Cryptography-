@@ -1,0 +1,64 @@
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+void affine_encrypt(char *plaintext, int a, int b) {
+    char *ptr = plaintext;
+    while (*ptr) {
+        if (isalpha(*ptr)) {
+            char base = isupper(*ptr) ? 'A' : 'a';
+            *ptr = ((a * (*ptr - base) + b) % 26 + 26) % 26 + base;
+        }
+        ptr++;
+    }
+}
+void affine_decrypt(char *ciphertext, int a, int b) {
+    int a_inv = 0;
+    for (int i = 0; i < 26; i++) {
+        if ((a * i) % 26 == 1) {
+            a_inv = i;
+            break;
+        }
+    }
+    char *ptr = ciphertext;
+    while (*ptr) {
+        if (isalpha(*ptr)) {
+            char base = isupper(*ptr) ? 'A' : 'a';
+            *ptr = ((a_inv * (*ptr - base - b)) % 26 + 26) % 26 + base;
+        }
+        ptr++;
+    }
+}
+int main() {
+    char text[100];
+    int a, b;
+    printf("Enter the text: ");
+    fgets(text, sizeof(text), stdin);
+    text[strcspn(text, "\n")] = 0;  // Remove the newline character
+    printf("Enter the value of a: ");
+    scanf("%d", &a);
+    printf("Enter the value of b: ");
+    scanf("%d", &b);
+    int gcd = 1;
+    int temp_a = a;
+    int temp_26 = 26;
+    while (temp_26 != 0) {
+        int temp = temp_26;
+        temp_26 = temp_a % temp_26;
+        temp_a = temp;
+    }
+    gcd = temp_a;
+    if (gcd != 1) {
+        printf("Invalid value of a. a and 26 are not coprime.\n");
+        return 1;
+    }
+    char encrypted_text[100];
+    strcpy(encrypted_text, text);
+    affine_encrypt(encrypted_text, a, b);
+    printf("Encrypted text: %s\n", encrypted_text);
+    char decrypted_text[100];
+    strcpy(decrypted_text, encrypted_text);
+    affine_decrypt(decrypted_text, a, b);
+    printf("Decrypted text: %s\n", decrypted_text);
+    return 0;
+}
+

@@ -1,0 +1,43 @@
+#include <stdio.h>
+#include <stdint.h>
+#include <string.h>
+#define BLOCK_SIZE 8
+void xor_blocks(uint8_t *block1, uint8_t *block2, uint8_t *result) {
+    for (int i = 0; i < BLOCK_SIZE; i++) {
+        result[i] = block1[i] ^ block2[i];
+    }
+}
+
+
+void encrypt_block(uint8_t *block, uint8_t *key, uint8_t *result) {
+  
+    xor_blocks(block, key, result);
+}
+
+void add_padding(uint8_t *plaintext, int *plaintext_len) {
+    int padding_len = BLOCK_SIZE - (*plaintext_len % BLOCK_SIZE);
+    plaintext[*plaintext_len] = 0x80; // Add a 1 bit
+    for (int i = 1; i < padding_len; i++) {
+        plaintext[*plaintext_len + i] = 0x00; 
+    }
+    *plaintext_len += padding_len;
+}
+
+int main() {
+    uint8_t key[BLOCK_SIZE] = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08};
+
+    uint8_t plaintext[32] = "Hello";
+    int plaintext_len = strlen((char *)plaintext);
+    add_padding(plaintext, &plaintext_len);
+
+    uint8_t ciphertext[plaintext_len];
+    for (int i = 0; i < plaintext_len; i += BLOCK_SIZE) {
+        encrypt_block(plaintext + i, key, ciphertext + i);
+        printf("ECB Ciphertext block %d: ", i / BLOCK_SIZE);
+        for (int j = 0; j < BLOCK_SIZE; j++) {
+            printf("%02x", ciphertext[i + j]);
+        }
+        printf("\n");
+    }
+    return 0;
+}

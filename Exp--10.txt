@@ -1,0 +1,86 @@
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+#define SIZE 5
+char matrix[SIZE][SIZE] = {
+    {'M', 'F', 'H', 'I', 'K'},
+    {'U', 'N', 'O', 'P', 'Q'},
+    {'Z', 'V', 'W', 'X', 'Y'},
+    {'E', 'L', 'A', 'R', 'G'},
+    {'D', 'S', 'T', 'B', 'C'}
+};
+void findPosition(char c, int *row, int *col) {
+    for (int i = 0; i < SIZE; i++) {
+        for (int j = 0; j < SIZE; j++) {
+            if (matrix[i][j] == c) {
+                *row = i;
+                *col = j;
+                return;
+            }
+        }
+    }
+}
+void encryptPair(char a, char b, char *encrypted) {
+    int row1, col1, row2, col2;
+    findPosition(a, &row1, &col1);
+    findPosition(b, &row2, &col2);
+    if (row1 == row2) {
+        encrypted[0] = matrix[row1][(col1 + 1) % SIZE];
+        encrypted[1] = matrix[row2][(col2 + 1) % SIZE];
+    } else if (col1 == col2) {
+        encrypted[0] = matrix[(row1 + 1) % SIZE][col1];
+        encrypted[1] = matrix[(row2 + 1) % SIZE][col2];
+    } else {
+        encrypted[0] = matrix[row1][col2];
+        encrypted[1] = matrix[row2][col1];
+    }
+}
+int main() {
+    char plaintext[] = "Must see you over Cadogan West. Coming at once";
+    char clean_plaintext[100];
+    int index = 0;
+    for (int i = 0; i < strlen(plaintext); i++) {
+        if (isalpha(plaintext[i])) {
+            clean_plaintext[index++] = toupper(plaintext[i]);
+        }
+    }
+    clean_plaintext[index] = '\0';
+    for (int i = 0; i < index; i++) {
+        if (clean_plaintext[i] == 'J') {
+            clean_plaintext[i] = 'I';
+        }
+    }
+    char pairs[100][2];
+    index = 0;
+    int pairIndex = 0;
+    while (index < strlen(clean_plaintext)) {
+        if (index + 1 < strlen(clean_plaintext) && clean_plaintext[index] == clean_plaintext[index + 1]) {
+            pairs[pairIndex][0] = clean_plaintext[index];
+            pairs[pairIndex][1] = 'X';
+            index++;
+            pairIndex++;
+        } else if (index + 1 < strlen(clean_plaintext)) {
+            pairs[pairIndex][0] = clean_plaintext[index];
+            pairs[pairIndex][1] = clean_plaintext[index + 1];
+            index += 2;
+            pairIndex++;
+        } else {
+            pairs[pairIndex][0] = clean_plaintext[index];
+            pairs[pairIndex][1] = 'X';
+            index++;
+            pairIndex++;
+        }
+    }
+    char encrypted_text[100];
+    index = 0;
+    for (int i = 0; i < pairIndex; i++) {
+        char encrypted_pair[2];
+        encryptPair(pairs[i][0], pairs[i][1], encrypted_pair);
+        encrypted_text[index++] = encrypted_pair[0];
+        encrypted_text[index++] = encrypted_pair[1];
+    }
+    encrypted_text[index] = '\0';
+    printf("Encrypted text: %s\n", encrypted_text);
+    return 0;
+}
+
